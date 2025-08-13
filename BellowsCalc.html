@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Bellows Pattern Calculator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles to ensure Inter font and smooth transitions */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light gray background */
+            margin: 0; /* Remove default body margin */
+            padding: 20px 2.5vw; /* Add consistent padding to the body for responsiveness */
+            min-height: 100vh;
+            box-sizing: border-box; /* Corrected to border-box */
+            display: flex; /* Use flexbox for body to center content vertically */
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 1rem; /* Rounded corners */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Soft shadow */
+            padding: 2.5rem; /* Internal padding */
+            width: 95vw; /* Take up 95% of the viewport width */
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        h1, h3 {
+            color: #1f2937; /* Dark gray for titles */
+        }
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive grid for inputs */
+            gap: 1.5rem;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .input-group label {
+            font-weight: 600;
+            color: #374151; /* Darker gray for labels */
+            min-height: 3rem; /* Ensure labels always occupy two lines worth of space for alignment */
+            display: flex; /* Use flexbox for vertical centering if needed */
+            align-items: center; /* Vertically center content if it's single line */
+        }
+        .input-group input[type="number"] {
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db; /* Light border */
+            border-radius: 0.5rem; /* Rounded input fields */
+            font-size: 1rem;
+            color: #1f2937; /* Dark text for input values */
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .input-group input[type="number"]:focus {
+            outline: none;
+            border-color: #6366f1; /* Indigo on focus */
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); /* Soft focus ring */
+        }
+        .checkbox-group {
+            display: flex;
+            flex-direction: column; /* Stack checkboxes vertically */
+            gap: 0.5rem; /* Space between checkboxes */
+            margin-top: 1rem;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .checkbox-item input[type="checkbox"] {
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 0.25rem;
+            border: 1px solid #d1d5db;
+            accent-color: #6366f1; /* Indigo checkmark */
+        }
+        .checkbox-item label {
+            color: #374151; /* Darker gray for checkbox labels */
+        }
+        .calculate-button {
+            background-color: #6366f1; /* Indigo button */
+            color: #ffffff;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem; /* More rounded button */
+            font-size: 1.125rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            border: none;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+        }
+        .calculate-button:hover {
+            background-color: #4f46e5; /* Darker indigo on hover */
+            transform: translateY(-2px); /* Slight lift effect */
+        }
+        .calculate-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(99, 102, 241, 0.3);
+        }
+        .export-buttons {
+            display: flex;
+            gap: 1rem; /* Space between export buttons */
+            justify-content: center; /* Center the buttons */
+            margin-top: 1rem;
+        }
+        .results-area {
+            background-color: #f9fafb; /* Lighter background for results */
+            border: 1px dashed #d1d5db; /* Dashed border for distinction */
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #4b5563; /* Medium gray text for results content */
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        .results-area h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937; /* Darker gray for results title */
+            margin-bottom: 1rem;
+        }
+        .error-message {
+            background-color: #fee2e2; /* Light red background */
+            color: #ef4444; /* Red text */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            text-align: center;
+            font-weight: 500;
+            display: none; /* Hidden by default */
+        }
+        .diagram-container {
+            margin-top: 1.5rem;
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column; /* Changed to column for stacking title and SVG */
+            justify-content: center;
+            align-items: center;
+            overflow-x: auto; /* Allow horizontal scrolling for wide diagrams */
+        }
+        .diagram-container svg {
+            width: 100%; /* Make SVG fill 100% of its parent's width */
+            height: 100%; /* Make SVG fill 100% of its parent's height */
+            /* Removed border and background-color from here to be handled conditionally by JS */
+        }
+        #svgContentArea {
+            width: 100%; /* Ensure the SVG container takes full width */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1; /* Allow this area to grow and take available space */
+            min-height: 300px; /* Re-added a reasonable min-height for the SVG content area */
+            position: relative; /* Needed for absolute positioning of placeholder */
+        }
+        #svgWrapper { /* New wrapper for SVG */
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Removed aspect-ratio to let SVG's viewBox define it */
+        }
+        #diagramPlaceholder {
+            position: absolute; /* Position over the svgWrapper */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Center the text */
+            text-align: center;
+            width: 90%; /* Constrain width */
+            padding: 1rem;
+            box-sizing: border-box;
+            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+            border-radius: 0.5rem;
+        }
+
+        /* Removed .inverted-diagram as inversion is now handled within SVG generation */
+        /* Style for the explanatory note */
+        #explanatoryNote {
+            color: red; /* Explicitly red as requested */
+            font-size: 0.875rem; /* text-sm equivalent */
+            line-height: 1.2; /* Reduced line spacing */
+            margin-top: 1rem; /* Space from diagram */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-extrabold text-center mb-6">Camera Bellows Pattern Calculator</h1>
+
+        <div class="input-grid">
+            <!-- Front Opening Dimensions -->
+            <div class="input-group">
+                <label for="frontOpeningWidth">Front Opening Width (mm):</label>
+                <input type="number" id="frontOpeningWidth" value="50" min="1" step="1">
+            </div>
+            <div class="input-group">
+                <label for="frontOpeningHeight">Front Opening Height (mm):</label>
+                <input type="number" id="frontOpeningHeight" value="50" min="1" step="1">
+            </div>
+
+            <!-- Rear Opening Dimensions -->
+            <div class="input-group">
+                <label for="rearOpeningWidth">Rear Opening Width (mm):</label>
+                <input type="number" id="rearOpeningWidth" value="135" min="1" step="1">
+            </div>
+            <div class="input-group">
+                <label for="rearOpeningHeight">Rear Opening Height (mm):</label>
+                <input type="number" id="rearOpeningHeight" value="70" min="1" step="1">
+            </div>
+
+            <!-- Bellows Lengths -->
+            <div class="input-group">
+                <label for="extendedLength">Extended Length (mm):</label>
+                <input type="number" id="extendedLength" value="190" min="1" step="1">
+            </div>
+            <!-- Compressed Length is now an output, removed input field -->
+
+            <!-- Fold Parameters -->
+            <div class="input-group">
+                <label for="numberOfFolds">Number of Folds:</label>
+                <input type="number" id="numberOfFolds" value="10" min="1" step="1">
+            </div>
+            <div class="input-group">
+                <label for="foldDepth">Normal Fold Depth (mm - how much most folds expand):</label>
+                <input type="number" id="foldDepth" value="12" min="1" step="0.1">
+            </div>
+            <div class="input-group">
+                <label for="smallFoldDepth">End Pleat Depth (mm - for first/last 3 folds):</label>
+                <input type="number" id="smallFoldDepth" value="9" min="0.1" step="0.1">
+            </div>
+
+            <!-- Material Thickness -->
+            <div class="input-group">
+                <label for="materialThickness">Material Thickness (mm):</label>
+                <input type="number" id="materialThickness" value="0.8" min="0.1" step="0.1">
+            </div>
+
+            <!-- Changed to Absolute Reduction (mm) -->
+            <div class="input-group">
+                <label for="innerPleatLineReductionAmount">Inner Pleat Line Reduction (mm):</label>
+                <input type="number" id="innerPleatLineReductionAmount" value="5.0" min="0" step="0.1">
+            </div>
+
+            <!-- Changed to Absolute Reduction (mm) -->
+            <div class="input-group">
+                <label for="outerPleatLineReductionAmount">Outer Pleat Line Reduction (mm):</label>
+                <input type="number" id="outerPleatLineReductionAmount" value="5.0" min="0" step="0.1">
+            </div>
+
+            <!-- New: Pleat Line Thickness Setting -->
+            <div class="input-group">
+                <label for="pleatLineThickness">Pleat Line Thickness (px):</label>
+                <input type="number" id="pleatLineThickness" value="4" min="0.1" step="0.1">
+            </div>
+
+            <!-- New: Outer Cut Line Offset Setting -->
+            <div class="input-group">
+                <label for="outerCutLineOffset">Outer Cut Line Offset (px):</label>
+                <input type="number" id="outerCutLineOffset" value="5" min="0" step="0.1">
+            </div>
+
+            <!-- Renamed and default value changed for Outer Cut Line Thickness -->
+            <div class="input-group">
+                <label for="outerCutLineThickness">Outer Border-line thickness (px):</label>
+                <input type="number" id="outerCutLineThickness" value="0.5" min="0.1" step="0.1">
+            </div>
+
+            <!-- New: Corner Fold Length Reduction -->
+            <div class="input-group">
+                <label for="cornerFoldLengthReductionPercent">Corner Fold Length Reduction (%):</label>
+                <input type="number" id="cornerFoldLengthReductionPercent" value="5" min="0" max="100" step="1">
+            </div>
+
+            <!-- New: Corner Fold Outline Thickness Setting -->
+            <div class="input-group">
+                <label for="cornerFoldOutlineThickness">Corner Fold Outline Thickness (px):</label>
+                <input type="number" id="cornerFoldOutlineThickness" value="1" min="0.1" step="0.1">
+            </div>
+        </div>
+
+        <div class="checkbox-group">
+            <div class="checkbox-item">
+                <input type="checkbox" id="showDimensionsCheckbox" checked>
+                <label for="showDimensionsCheckbox">Show Dimensions/Labels on Diagram</label>
+            </div>
+            <div class="checkbox-item">
+                <input type="checkbox" id="invertColorsCheckbox">
+                <label for="invertColorsCheckbox">Invert Diagram Colors</label>
+            </div>
+            <div class="checkbox-item">
+                <input type="checkbox" id="maxFoldsCheckbox" checked> <!-- Set to checked by default -->
+                <label for="maxFoldsCheckbox">Calculate Max Folds</label>
+            </div>
+        </div>
+
+        <button id="calculateButton" class="calculate-button">Calculate Pattern</button>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <div id="results" class="results-area">
+            <h3>Calculation Results</h3>
+            <p id="initialResultsText">Enter your dimensions and click "Calculate Pattern" to see the results.</p>
+        </div>
+
+        <div id="patternDiagram" class="diagram-container">
+            <h3 class="text-xl font-bold mb-4">Pattern Diagram Preview:</h3>
+            <div id="svgContentArea" class="flex justify-center items-center w-full h-full">
+                <div id="svgWrapper" class="w-full h-full flex justify-center items-center">
+                    <!-- SVG will be injected here -->
+                </div>
+                <p id="diagramPlaceholder" class="text-gray-600">The calculated pattern will appear here as a single, continuous piece with internal seams.</p>
+            </div>
+        </div>
+        <div class="export-buttons">
+            <button id="exportPngButton" class="calculate-button">Export as PNG</button>
+            <button id="exportSvgButton" class="calculate-button">Export as SVG</button>
+        </div>
+
+        <div id="explanatoryNote" class="text-sm text-center">
+            <!-- Note will be inserted here by JS -->
+        </div>
+    </div>
+
+    <script>
+        // Global constants for diagram generation
+        const baseFontSizeMain = 5;
+        const baseFontSizeOverall = 6;
+        const lineHeight = 1.2;
+        const arrowHeadLength = 9;
+
+        // Base colors (non-inverted state)
+        const BASE_PANEL_FILL_COLOR = '#FFFFFF';
+        const BASE_OUTER_OUTLINE_COLOR = '#000000'; // For the outer cut line and corner fold outline
+        const BASE_FOLD_LINE_COLOR = '#000000';
+        const BASE_DIMENSION_LINE_COLOR = '#000000';
+        const RED_COLOR_FOR_LINES_AND_TEXT = '#FF0000';
+
+        // Minimum radius for a tapering bellows to be considered drawable
+        const MIN_RADIUS_FOR_TAPER = 5;
+
+        // Get references to all input elements
+        const frontOpeningWidthInput = document.getElementById('frontOpeningWidth');
+        const frontOpeningHeightInput = document.getElementById('frontOpeningHeight');
+        const rearOpeningWidthInput = document.getElementById('rearOpeningWidth');
+        const rearOpeningHeightInput = document.getElementById('rearOpeningHeight');
+        const extendedLengthInput = document.getElementById('extendedLength');
+        const numberOfFoldsInput = document.getElementById('numberOfFolds');
+        const foldDepthInput = document.getElementById('foldDepth');
+        const smallFoldDepthInput = document.getElementById('smallFoldDepth');
+        const materialThicknessInput = document.getElementById('materialThickness');
+        const innerPleatLineReductionAmountInput = document.getElementById('innerPleatLineReductionAmount');
+        const outerPleatLineReductionAmountInput = document.getElementById('outerPleatLineReductionAmount');
+        const pleatLineThicknessInput = document.getElementById('pleatLineThickness');
+        const outerCutLineOffsetInput = document.getElementById('outerCutLineOffset');
+        const outerCutLineThicknessInput = document.getElementById('outerCutLineThickness');
+        const cornerFoldLengthReductionPercentInput = document.getElementById('cornerFoldLengthReductionPercent');
+        const cornerFoldOutlineThicknessInput = document.getElementById('cornerFoldOutlineThickness');
+        const showDimensionsCheckbox = document.getElementById('showDimensionsCheckbox');
+        const invertColorsCheckbox = document.getElementById('invertColorsCheckbox');
+        const maxFoldsCheckbox = document.getElementById('maxFoldsCheckbox');
+
+        // Get references to the button and results area
+        const calculateButton = document.getElementById('calculateButton');
+        const resultsDiv = document.getElementById('results');
+        const initialResultsText = document.getElementById('initialResultsText');
+        const errorMessageDiv = document.getElementById('errorMessage');
+        const svgContentArea = document.getElementById('svgContentArea');
+        const svgWrapper = document.getElementById('svgWrapper');
+        const diagramPlaceholder = document.getElementById('diagramPlaceholder');
+        const explanatoryNoteDiv = document.getElementById('explanatoryNote');
+        const exportPngButton = document.getElementById('exportPngButton');
+        const exportSvgButton = document.getElementById('exportSvgButton');
+
+
+        /**
+         * Displays an error message in the dedicated error div.
+         * @param {string} message - The error message to display.
+         */
+        function showErrorMessage(message) {
+            console.log("Showing error message:", message);
+            errorMessageDiv.textContent = message;
+            errorMessageDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<h3>Calculation Results</h3><p style="color: #4b5563;">Please correct the errors above.</p>';
+
+            svgWrapper.innerHTML = '';
+            diagramPlaceholder.textContent = 'Cannot generate diagram due to errors.';
+            diagramPlaceholder.style.display = 'block';
+            exportPngButton.style.display = 'none'; // Hide export button on error
+            exportSvgButton.style.display = 'none'; // Hide SVG export button on error
+
+            explanatoryNoteDiv.innerHTML = '';
+        }
+
+        /**
+         * Clears any displayed error messages.
+         */
+        function clearErrorMessage() {
+            errorMessageDiv.textContent = '';
+            errorMessageDiv.style.display = 'none';
+        }
+
+        /**
+         * Generates an SVG diagram of the bellows pattern as a single, continuous piece,
+         * with internal seams and glue tabs, replicating the provided image.
+         * @param {object} dimensions - Object containing calculated dimensions.
+         * @param {boolean} showDimensions - Whether to show dimension labels on the diagram.
+         * @param {boolean} invertColors - Whether to invert colors for diagram elements (non-text).
+         * @param {number} innerPleatLineReductionAmount - Absolute reduction for inner pleat lines in mm.
+         * @param {number} outerPleatLineReductionAmount - Absolute reduction for outer pleat lines in mm.
+         * @param {number} pleatLineThickness - Thickness of the pleat lines in pixels.
+         * @param {number} outerCutLineOffset - Offset distance for the outer cut line in pixels.
+         * @param {number} outerCutLineThickness - Thickness of the outer cut line in pixels.
+         * @param {number} cornerFoldLengthReductionPercent - Percentage reduction for the visual length of corner folds.
+         * @param {number} cornerFoldOutlineThickness - Thickness of the corner fold outlines in pixels.
+         * @returns {object} - An object containing { success: boolean, svg?: string, message?: string }.
+         */
+        function generatePatternDiagram(dimensions, showDimensions, invertColors, innerPleatLineReductionAmount, outerPleatLineReductionAmount, pleatLineThickness, outerCutLineOffset, outerCutLineThickness, cornerFoldLengthReductionPercent, cornerFoldOutlineThickness) {
+            console.log("Generating pattern diagram...");
+            const {
+                totalMaterialLength,
+                foldSpacing,
+                numberOfFolds,
+                frontOpeningWidth,
+                frontOpeningHeight,
+                rearOpeningWidth,
+                rearOpeningHeight,
+                effectiveSideFoldDepth,
+                foldDepth,
+                smallFoldDepth,
+                numSmallFolds,
+                numNormalFolds
+            } = dimensions;
+
+            const padding = 15; // Padding around the actual content within the viewBox, in SVG units (mm)
+            const textMargin = 10; // Extra margin for text labels, in SVG units (mm)
+
+            const totalFrontArcLength = 2 * (frontOpeningWidth + frontOpeningHeight);
+            const totalRearArcLength = 2 * (rearOpeningWidth + rearOpeningHeight);
+
+            let R1, R2;
+            let svgContent = '';
+
+            // Initialize global bounds
+            let minX_global = Infinity, maxX_global = -Infinity, minY_global = Infinity, maxY_global = -Infinity;
+
+            function updateGlobalBoundsWithPoint(x, y) {
+                minX_global = Math.min(minX_global, x);
+                maxX_global = Math.max(maxX_global, x);
+                minY_global = Math.min(minY_global, y);
+                maxY_global = Math.max(maxY_global, y);
+            }
+
+            function polarToRawCartesian(radius, angle) {
+                return {
+                    x: radius * Math.cos(angle),
+                    y: radius * Math.sin(angle)
+                };
+            }
+
+            const currentPanelFillColor = invertColors ? '#000000' : BASE_PANEL_FILL_COLOR;
+            const currentOuterOutlineColor = invertColors ? '#FFFFFF' : BASE_OUTER_OUTLINE_COLOR;
+            const currentFoldLineColor = invertColors ? '#FFFFFF' : BASE_FOLD_LINE_COLOR;
+            const currentCornerFoldFillColor = invertColors ? '#FFFFFF' : '#000000';
+            const currentCornerFoldStrokeColor = currentOuterOutlineColor;
+
+            const currentDimensionLineColor = invertColors ? '#FFFFFF' : BASE_DIMENSION_LINE_COLOR;
+            const currentDimensionTextColor = RED_COLOR_FOR_LINES_AND_TEXT;
+            const currentPanelLabelColor = RED_COLOR_FOR_LINES_AND_TEXT;
+            const currentArrowHeadColor = RED_COLOR_FOR_LINES_AND_TEXT;
+
+            // Calculate foldLengthOffset here, before it's used
+            const reducedMaterialLengthForFolds = totalMaterialLength * (1 - cornerFoldLengthReductionPercent / 100);
+            const foldLengthOffset = (totalMaterialLength - reducedMaterialLengthForFolds) / 2;
+
+
+            // These are now directly using the input values
+            const effectivePleatLineThickness = pleatLineThickness;
+            const effectiveOuterCutLineThickness = outerCutLineThickness;
+            const effectiveCornerFoldOutlineThickness = cornerFoldOutlineThickness;
+            const effectiveBaseFontSizeMain = baseFontSizeMain;
+            const effectiveBaseFontSizeOverall = baseFontSizeOverall;
+            const effectiveArrowHeadLength = arrowHeadLength;
+
+
+            // --- Draw and simultaneously update global bounds ---
+
+            if (Math.abs(totalFrontArcLength - totalRearArcLength) < 0.01) {
+                // Rectangular bellows
+                const panelWidthsForRect = [
+                    frontOpeningWidth / 2,
+                    frontOpeningHeight,
+                    frontOpeningWidth,
+                    frontOpeningHeight,
+                    frontOpeningWidth / 2
+                ];
+                let rectWidth = 0;
+                for (let i = 0; i < panelWidthsForRect.length; i++) {
+                    rectWidth += panelWidthsForRect[i];
+                    if (i < panelWidthsForRect.length - 1) {
+                        rectWidth += foldDepth;
+                    }
+                }
+                const rectHeight = totalMaterialLength;
+
+                // Draw main panels and update bounds
+                let currentX = 0;
+                for (let i = 0; i < panelWidthsForRect.length; i++) {
+                    const panelWidth = panelWidthsForRect[i];
+                    svgContent += `
+                        <rect x="${currentX}" y="0" width="${panelWidth}" height="${totalMaterialLength}" fill="${currentPanelFillColor}" stroke="none"/>
+                    `;
+                    updateGlobalBoundsWithPoint(currentX, 0);
+                    updateGlobalBoundsWithPoint(currentX + panelWidth, 0);
+                    updateGlobalBoundsWithPoint(currentX, totalMaterialLength);
+                    updateGlobalBoundsWithPoint(currentX + panelWidth, totalMaterialLength);
+
+                    currentX += panelWidth;
+                    if (i < panelWidthsForRect.length - 1) {
+                        const gapWidth = foldDepth;
+                        svgContent += `
+                            <rect x="${currentX}" y="${foldLengthOffset}" width="${gapWidth}" height="${reducedMaterialLengthForFolds}" fill="${currentCornerFoldFillColor}" stroke="${currentCornerFoldStrokeColor}" stroke-width="${effectiveCornerFoldOutlineThickness}"/>
+                        `;
+                        updateGlobalBoundsWithPoint(currentX, foldLengthOffset);
+                        updateGlobalBoundsWithPoint(currentX + gapWidth, foldLengthOffset);
+                        updateGlobalBoundsWithPoint(currentX, foldLengthOffset + reducedMaterialLengthForFolds);
+                        updateGlobalBoundsWithPoint(currentX + gapWidth, foldLengthOffset + reducedMaterialLengthForFolds);
+                        currentX += gapWidth;
+                    }
+                }
+
+                // Horizontal Fold Lines (using absolute reduction)
+                let currentYOffset = 0;
+                for (let i = 0; i < numberOfFolds; i++) {
+                    const depth = (i < numSmallFolds) ? smallFoldDepth : foldDepth;
+                    currentYOffset += depth;
+                    let lineY = currentYOffset;
+
+                    let currentPanelStartCoord = 0;
+                    for (let j = 0; j < panelWidthsForRect.length; j++) {
+                        const panelWidth = panelWidthsForRect[j];
+                        const currentAbsoluteReduction = (j === 0 || j === panelWidthsForRect.length - 1) ? outerPleatLineReductionAmount : innerPleatLineReductionAmount;
+
+                        const segmentLength = Math.max(0, panelWidth - 2 * currentAbsoluteReduction); // Ensure non-negative length
+                        const segmentStartX = currentPanelStartCoord + currentAbsoluteReduction;
+                        const segmentEndX = segmentStartX + segmentLength;
+
+                        // Changed from <line> to <path> with rounded linecap
+                        svgContent += `
+                            <path d="M ${segmentStartX},${lineY} L ${segmentEndX},${lineY}"
+                                  stroke="${currentFoldLineColor}" stroke-width="${effectivePleatLineThickness}" stroke-linecap="round"/>
+                        `;
+                        updateGlobalBoundsWithPoint(segmentStartX, lineY);
+                        updateGlobalBoundsWithPoint(segmentEndX, lineY);
+                        currentPanelStartCoord += panelWidth;
+                        if (j < panelWidthsForRect.length - 1) {
+                            currentPanelStartCoord += foldDepth;
+                        }
+                    }
+
+                    currentYOffset += depth;
+                    lineY = currentYOffset;
+
+                    currentPanelStartCoord = 0;
+                    for (let j = 0; j < panelWidthsForRect.length; j++) {
+                        const panelWidth = panelWidthsForRect[j];
+                        const currentAbsoluteReduction = (j === 0 || j === panelWidthsForRect.length - 1) ? outerPleatLineReductionAmount : innerPleatLineReductionAmount;
+
+                        const segmentLength = Math.max(0, panelWidth - 2 * currentAbsoluteReduction); // Ensure non-negative length
+                        const segmentStartX = currentPanelStartCoord + currentAbsoluteReduction;
+                        const segmentEndX = segmentStartX + segmentLength;
+
+                        // Changed from <line> to <path> with rounded linecap
+                        svgContent += `
+                            <path d="M ${segmentStartX},${lineY} L ${segmentEndX},${lineY}"
+                                  stroke="${currentFoldLineColor}" stroke-width="${effectivePleatLineThickness}" stroke-linecap="round"/>
+                        `;
+                        updateGlobalBoundsWithPoint(segmentStartX, lineY);
+                        updateGlobalBoundsWithPoint(segmentEndX, lineY);
+                        currentPanelStartCoord += panelWidth;
+                        if (j < panelWidthsForRect.length - 1) {
+                            currentPanelStartCoord += foldDepth;
+                        }
+                    }
+                }
+
+                if (showDimensions) {
+                    const overallLengthLineY = totalMaterialLength / 2;
+                    const overallLengthTextY_rect = totalMaterialLength / 2;
+                    const lineX1 = -effectiveArrowHeadLength;
+                    const lineX2 = rectWidth + effectiveArrowHeadLength;
+                    const textX = (lineX1 + lineX2) / 2;
+
+                    svgContent += `
+                        <line x1="${lineX1}" y1="${overallLengthLineY}" x2="${lineX2}" y2="${overallLengthLineY}" stroke="${currentDimensionLineColor}" stroke-width="1" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)"/>
+                        <text x="${textX}" y="${overallLengthTextY_rect}" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="${effectiveBaseFontSizeOverall}" fill="${currentDimensionTextColor}">${Math.round(totalMaterialLength)}mm</text>
+                    `;
+                    updateGlobalBoundsWithPoint(lineX1, overallLengthLineY);
+                    updateGlobalBoundsWithPoint(lineX2, overallLengthLineY);
+                    updateGlobalBoundsWithPoint(textX, overallLengthTextY_rect - effectiveBaseFontSizeOverall / 2);
+                    updateGlobalBoundsWithPoint(textX, overallLengthTextY_rect + effectiveBaseFontSizeOverall / 2);
+
+                    let currentLabelX = 0;
+                    const panelLabels = ["W", "H", "W", "H", "W"];
+                    const topPanelWidths = [
+                        frontOpeningWidth / 2,
+                        frontOpeningHeight,
+                        frontOpeningWidth,
+                        frontOpeningHeight,
+                        frontOpeningWidth / 2
+                    ];
+                    const bottomPanelWidths = [
+                        rearOpeningWidth / 2,
+                        rearOpeningHeight,
+                        rearOpeningWidth,
+                        rearOpeningHeight,
+                        rearOpeningWidth / 2
+                    ];
+
+                    for (let k = 0; k < panelLabels.length; k++) {
+                        const panelMidX = currentLabelX + (panelWidthsForRect[k]) / 2;
+
+                        svgContent += `
+                            <text x="${panelMidX}" y="${-textMargin - effectiveBaseFontSizeMain * lineHeight}" text-anchor="middle" font-family="Arial" font-size="${effectiveBaseFontSizeMain}" fill="${currentPanelLabelColor}">${panelLabels[k]}</text>
+                            <text x="${panelMidX}" y="${-textMargin}" text-anchor="middle" font-family="Arial" font-size="${effectiveBaseFontSizeMain}" fill="${currentPanelLabelColor}">Lens:</text>
+                            <text x="${panelMidX}" y="${-textMargin + effectiveBaseFontSizeMain * lineHeight}" text-anchor="middle" font-family="Arial" font-size="${effectiveBaseFontSizeMain}" fill="${currentPanelLabelColor}">${Math.round(topPanelWidths[k])}mm</text>
+                        `;
+                        updateGlobalBoundsWithPoint(panelMidX, -textMargin - effectiveBaseFontSizeMain * lineHeight);
+                        updateGlobalBoundsWithPoint(panelMidX, -textMargin + effectiveBaseFontSizeMain * lineHeight);
+
+                        svgContent += `
+                            <text x="${panelMidX}" y="${totalMaterialLength + textMargin - effectiveBaseFontSizeMain * lineHeight}" text-anchor="middle" font-family="Arial" font-size="${effectiveBaseFontSizeMain}" fill="${currentPanelLabelColor}">${panelLabels[k]}</text>
+                            <text x="${panelMidX}" y="${totalMaterialLength + textMargin}" text-anchor="middle" font-family="Arial" font-size="${effectiveBaseFontSizeMain}" fill="${currentPanelLabelColor}">Camera:</text>
+                            <text x="${panelMidX}" y="${totalMaterialLength + textMargin + effectiveBaseFontSizeMain * lineHeight}" text-anchor="middle" font-family="Arial" font-size="${effectiveBaseFontSizeMain}" fill="${currentPanelLabelColor}">${Math.round(bottomPanelWidths[k])}mm</text>
+                        `;
+                        updateGlobalBoundsWithPoint(panelMidX, totalMaterialLength + textMargin - effectiveBaseFontSizeMain * lineHeight);
+                        updateGlobalBoundsWithPoint(panelMidX, totalMaterialLength + textMargin + effectiveBaseFontSizeMain * lineHeight);
+
+                        currentLabelX += panelWidthsForRect[k];
+                        if (k < panelWidthsForRect.length - 1) {
+                            currentLabelX += foldDepth;
+                        }
+                    }
+                }
+
+            } else {
+                // Tapering bellows
+                R1 = totalMaterialLength * totalFrontArcLength / (totalRearArcLength - totalFrontArcLength);
+
+                if (isNaN(R1) || !isFinite(R1) || Math.abs(R1) < MIN_RADIUS_FOR_TAPER) {
+                    console.error("Calculated radius R1 is invalid or too small for a practical tapering bellows pattern:", R1);
+                    return { success: false, message: `The calculated radius (R1 = ${R1.toFixed(2)} mm) is too small for a practical tapering bellows pattern. Please adjust Front/Rear Opening sizes or Extended Length to make the taper less extreme.` };
+                }
+
+                R1 = Math.abs(R1);
+                R2 = R1 + totalMaterialLength;
+
+                const angleW_half = (frontOpeningWidth / 2) / R1;
+                const angleH_full = frontOpeningHeight / R1;
+                const angleW_full = frontOpeningWidth / R1;
+                const panelAngles = [
+                    angleW_half,
+                    angleH_full,
+                    angleW_full,
+                    angleH_full,
+                    angleW_half
+                ];
+
+                let totalCurrentAngle = 0;
+                for (let i = 0; i < panelAngles.length; i++) {
+                    totalCurrentAngle += panelAngles[i];
+                    if (i < panelAngles.length - 1) {
+                        totalCurrentAngle += (foldDepth / R1);
+                    }
+                }
+
+                const startAngleOffset = -totalCurrentAngle / 2;
+
+                let currentAngle = startAngleOffset;
+                for (let i = 0; i < panelAngles.length; i++) {
+                    const panelStartAngle = currentAngle;
+                    const panelEndAngle = currentAngle + panelAngles[i];
+
+                    const p_inner_left = polarToRawCartesian(R1, panelStartAngle);
+                    const p_inner_right = polarToRawCartesian(R1, panelEndAngle);
+                    const p_outer_right = polarToRawCartesian(R2, panelEndAngle);
+                    const p_outer_left = polarToRawCartesian(R2, panelStartAngle);
+
+                    svgContent += `
+                        <polygon points="${p_inner_left.x},${p_inner_left.y}
+                                        ${p_inner_right.x},${p_inner_right.y}
+                                        ${p_outer_right.x},${p_outer_right.y}
+                                        ${p_outer_left.x},${p_outer_left.y}"
+                                 fill="${currentPanelFillColor}" stroke="none"/>
+                    `;
+                    updateGlobalBoundsWithPoint(p_inner_left.x, p_inner_left.y);
+                    updateGlobalBoundsWithPoint(p_inner_right.x, p_inner_right.y);
+                    updateGlobalBoundsWithPoint(p_outer_right.x, p_outer_right.y);
+                    updateGlobalBoundsWithPoint(p_outer_left.x, p_outer_left.y);
+
+                    currentAngle = panelEndAngle;
+                    if (i < panelAngles.length - 1) {
+                        const gapAngle = foldDepth / R1;
+                        const currentInnerRadius = R1 + foldLengthOffset;
+                        const currentOuterRadius = R2 - foldLengthOffset;
+
+                        const p_inner_gap_start_shortened = polarToRawCartesian(currentInnerRadius, currentAngle);
+                        const p_inner_gap_end_shortened = polarToRawCartesian(currentInnerRadius, currentAngle + gapAngle);
+                        const p_outer_gap_end_shortened = polarToRawCartesian(currentOuterRadius, currentAngle + gapAngle);
+                        const p_outer_gap_start_shortened = polarToRawCartesian(currentOuterRadius, currentAngle);
+
+                        svgContent += `
+                            <polygon points="${p_inner_gap_start_shortened.x},${p_inner_gap_start_shortened.y}
+                                            ${p_inner_gap_end_shortened.x},${p_inner_gap_end_shortened.y}
+                                            ${p_outer_gap_end_shortened.x},${p_outer_gap_end_shortened.y}
+                                            ${p_outer_gap_start_shortened.x},${p_outer_gap_start_shortened.y}"
+                                     fill="${currentCornerFoldFillColor}" stroke="${currentCornerFoldStrokeColor}" stroke-width="${effectiveCornerFoldOutlineThickness}"/>
+                        `;
+                        updateGlobalBoundsWithPoint(p_inner_gap_start_shortened.x, p_inner_gap_start_shortened.y);
+                        updateGlobalBoundsWithPoint(p_inner_gap_end_shortened.x, p_inner_gap_end_shortened.y);
+                        updateGlobalBoundsWithPoint(p_outer_gap_end_shortened.x, p_outer_gap_end_shortened.y);
+                        updateGlobalBoundsWithPoint(p_outer_gap_start_shortened.x, p_outer_gap_start_shortened.y);
+                        currentAngle += gapAngle;
+                    }
+                }
+
+                // Draw straight fold lines across each panel for tapering bellows (using absolute reduction)
+                let currentRadiusOffset = 0;
+                for (let i = 0; i < numberOfFolds; i++) {
+                    const depth = (i < numSmallFolds) ? smallFoldDepth : foldDepth;
+                    currentRadiusOffset += depth;
+                    const currentFoldRadius1 = R1 + currentRadiusOffset;
+
+                    currentRadiusOffset += depth;
+                    const currentFoldRadius2 = R1 + currentRadiusOffset;
+
+                    let currentPanelAngle = startAngleOffset;
+
+                    for (let j = 0; j < panelAngles.length; j++) {
+                        const panelStartAngularPosition = currentPanelAngle;
+                        const panelEndAngularPosition = currentPanelAngle + panelAngles[j];
+
+                        const lineAbsoluteReduction = (j === 0 || j === panelAngles.length - 1) ? outerPleatLineReductionAmount : innerPleatLineReductionAmount;
+
+                        // Calculate arc length to determine if reduction is too large
+                        const fullArcLength1 = (panelEndAngularPosition - panelStartAngularPosition) * currentFoldRadius1;
+                        const clampedReduction1 = Math.min(lineAbsoluteReduction, Math.max(0, fullArcLength1 / 2 - 0.1)); // Ensure at least 0.2mm total length
+                        const angleReduction1 = clampedReduction1 / currentFoldRadius1;
+
+                        const lineStartAngle1 = panelStartAngularPosition + angleReduction1;
+                        const lineEndAngle1 = panelEndAngularPosition - angleReduction1;
+
+                        let startPoint1 = polarToRawCartesian(currentFoldRadius1, lineStartAngle1);
+                        let endPoint1 = polarToRawCartesian(currentFoldRadius1, lineEndAngle1);
+                        // Changed from <line> to <path> with rounded linecap
+                        svgContent += `
+                            <path d="M ${startPoint1.x},${startPoint1.y} L ${endPoint1.x},${endPoint1.y}"
+                                  stroke="${currentFoldLineColor}" stroke-width="${effectivePleatLineThickness}" stroke-linecap="round"/>
+                        `;
+                        updateGlobalBoundsWithPoint(startPoint1.x, startPoint1.y);
+                        updateGlobalBoundsWithPoint(endPoint1.x, endPoint1.y);
+
+                        const fullArcLength2 = (panelEndAngularPosition - panelStartAngularPosition) * currentFoldRadius2;
+                        const clampedReduction2 = Math.min(lineAbsoluteReduction, Math.max(0, fullArcLength2 / 2 - 0.1)); // Ensure at least 0.2mm total length
+                        const angleReduction2 = clampedReduction2 / currentFoldRadius2;
+
+                        let startPoint2 = polarToRawCartesian(currentFoldRadius2, panelStartAngularPosition + angleReduction2);
+                        let endPoint2 = polarToRawCartesian(currentFoldRadius2, panelEndAngularPosition - angleReduction2);
+                        // Changed from <line> to <path> with rounded linecap
+                        svgContent += `
+                            <path d="M ${startPoint2.x},${startPoint2.y} L ${endPoint2.x},${endPoint2.y}"
+                                  stroke="${currentFoldLineColor}" stroke-width="${effectivePleatLineThickness}" stroke-linecap="round"/>
+                        `;
+                        updateGlobalBoundsWithPoint(startPoint2.x, startPoint2.y);
+                        updateGlobalBoundsWithPoint(endPoint2.x, endPoint2.y);
+                        currentPanelAngle = panelEndAngularPosition;
+                        if (j < panelAngles.length - 1) {
+                            currentPanelAngle += (foldDepth / R1);
+                        }
+                    }
+                }
+
+
+                if (showDimensions) {
+                    const midAngle = startAngleOffset + totalCurrentAngle / 2;
+
+                    const lengthLineStart = polarToRawCartesian(R1 + effectiveArrowHeadLength, midAngle);
+                    const lengthLineEnd = polarToRawCartesian(R2 - effectiveArrowHeadLength, midAngle);
+                    const lengthLabelPos = polarToRawCartesian(R1 + totalMaterialLength / 2, midAngle);
+
+                    svgContent += `
+                        <line x1="${lengthLineStart.x}" y1="${lengthLineStart.y}" x2="${lengthLineEnd.x}" y2="${lengthLineEnd.y}" stroke="${currentDimensionLineColor}" stroke-width="1" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)"/>
+                        <text x="${lengthLabelPos.x}" y="${lengthLabelPos.y}" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="${effectiveBaseFontSizeOverall}" fill="${currentDimensionTextColor}">${Math.round(totalMaterialLength)}mm</text>
+                    `;
+                    updateGlobalBoundsWithPoint(lengthLineStart.x, lengthLineStart.y);
+                    updateGlobalBoundsWithPoint(lengthLineEnd.x, lengthLineEnd.y);
+                    updateGlobalBoundsWithPoint(lengthLabelPos.x, lengthLabelPos.y - effectiveBaseFontSizeOverall / 2);
+                    updateGlobalBoundsWithPoint(lengthLabelPos.x, lengthLabelPos.y + effectiveBaseFontSizeOverall / 2);
+
+                    let currentAngleForPanelLabels = startAngleOffset;
+                    const panelLabels = ["W", "H", "W", "H", "W"];
+                    const topPanelWidths = [
+                        frontOpeningWidth / 2,
+                        frontOpeningHeight,
+                        frontOpeningWidth,
+                        frontOpeningHeight,
+                        frontOpeningWidth / 2
+                    ];
+                    const bottomPanelWidths = [
+                        rearOpeningWidth / 2,
+                        rearOpeningHeight,
+                        rearOpeningWidth,
+                        rearOpeningHeight,
+                        rearOpeningWidth / 2
+                    ];
+
+                    const textRadialOffset = 25;
+
+                    for (let k = 0; k < panelLabels.length; k++) {
+                        const panelAngleForLabel = panelAngles[k];
+                        const midPanelAngle = currentAngleForPanelLabels + panelAngleForLabel / 2;
+
+                        const lensTextBasePos = polarToRawCartesian(R1 + textRadialOffset, midPanelAngle);
+                        const cameraTextBasePos = polarToRawCartesian(R2 - textRadialOffset, midPanelAngle);
+
+                        svgContent += `
+                            <text x="${lensTextBasePos.x}" y="${lensTextBasePos.y - effectiveBaseFontSizeMain * lineHeight}" text-anchor="middle" font-family="Arial" font-size="${effectiveBaseFontSizeMain}" fill="${currentPanelLabelColor}">${panelLabels[k]}</text>
+                            <text x="${lensTextBasePos.x}" y="${lensTextBasePos.y}" text-anchor="middle" font-family="Arial" font-size="${effectiveBaseFontSizeMain}" fill="${currentPanelLabelColor}">Lens:</text>
+                            <text x="${lensTextBasePos.x}" y="${lensTextBasePos.y + effectiveBaseFontSizeMain * lineHeight}" text-anchor="middle" font-family="Arial" font-size="${effectiveBaseFontSizeMain}" fill="${currentPanelLabelColor}">${Math.round(topPanelWidths[k])}mm</text>
+                        `;
+                        updateGlobalBoundsWithPoint(lensTextBasePos.x, lensTextBasePos.y - effectiveBaseFontSizeMain * lineHeight);
+                        updateGlobalBoundsWithPoint(lensTextBasePos.x, lensTextBasePos.y + effectiveBaseFontSizeMain * lineHeight);
+
+
+                        svgContent += `
+                            <text x="${cameraTextBasePos.x}" y="${cameraTextBasePos.y - effectiveBaseFontSizeMain * lineHeight}" text-anchor="middle" font-family="Arial" font-size="${effectiveBaseFontSizeMain}" fill="${currentPanelLabelColor}">${panelLabels[k]}</text>
+                            <text x="${cameraTextBasePos.x}" y="${cameraTextBasePos.y}" text-anchor="middle" font-family="Arial" font-size="${effectiveBaseFontSizeMain}" fill="${currentPanelLabelColor}">Camera:</text>
+                            <text x="${cameraTextBasePos.x}" y="${cameraTextBasePos.y + effectiveBaseFontSizeMain * lineHeight}" text-anchor="middle" font-family="Arial" font-size="${effectiveBaseFontSizeMain}" fill="${currentPanelLabelColor}">${Math.round(bottomPanelWidths[k])}mm</text>
+                        `;
+                        updateGlobalBoundsWithPoint(cameraTextBasePos.x, cameraTextBasePos.y - effectiveBaseFontSizeMain * lineHeight);
+                        updateGlobalBoundsWithPoint(cameraTextBasePos.x, cameraTextBasePos.y + effectiveBaseFontSizeMain / 2);
+
+                        currentAngleForPanelLabels += panelAngleForLabel;
+                        if (k < panelAngles.length - 1) {
+                            currentAngleForPanelLabels += (foldDepth / R1);
+                        }
+                    }
+                }
+            }
+
+            // --- Draw the outer cut line (offset from the actual bellows geometry) ---
+            // This path also contributes to the global bounds calculation.
+            let outerPathD = '';
+            if (Math.abs(totalFrontArcLength - totalRearArcLength) < 0.01) {
+                let tempRectWidth = 0;
+                const panelWidthsForRectForPath = [
+                    frontOpeningWidth / 2,
+                    frontOpeningHeight,
+                    frontOpeningWidth,
+                    frontOpeningHeight,
+                    frontOpeningWidth / 2
+                ];
+                for (let i = 0; i < panelWidthsForRectForPath.length; i++) {
+                    tempRectWidth += panelWidthsForRectForPath[i];
+                    if (i < panelWidthsForRectForPath.length - 1) {
+                        tempRectWidth += foldDepth;
+                    }
+                }
+                outerPathD = `M ${-outerCutLineOffset},${-outerCutLineOffset} L ${tempRectWidth + outerCutLineOffset},${-outerCutLineOffset} L ${tempRectWidth + outerCutLineOffset},${totalMaterialLength + outerCutLineOffset} L ${-outerCutLineOffset},${totalMaterialLength + outerCutLineOffset} Z`;
+                updateGlobalBoundsWithPoint(-outerCutLineOffset, -outerCutLineOffset);
+                updateGlobalBoundsWithPoint(tempRectWidth + outerCutLineOffset, -outerCutLineOffset);
+                updateGlobalBoundsWithPoint(tempRectWidth + outerCutLineOffset, totalMaterialLength + outerCutLineOffset);
+                updateGlobalBoundsWithPoint(-outerCutLineOffset, totalMaterialLength + outerCutLineOffset);
+            } else {
+                R1 = Math.abs(R1);
+                R2 = R1 + totalMaterialLength;
+
+                const angleW_half = (frontOpeningWidth / 2) / R1;
+                const angleH_full = frontOpeningHeight / R1;
+                const angleW_full = frontOpeningWidth / R1;
+                const panelAngles = [angleW_half, angleH_full, angleW_full, angleH_full, angleW_half];
+
+                let totalCurrentAngle = 0;
+                for (let i = 0; i < panelAngles.length; i++) {
+                    totalCurrentAngle += panelAngles[i];
+                    if (i < panelAngles.length - 1) {
+                        totalCurrentAngle += (foldDepth / R1);
+                    }
+                }
+                const startAngleOffset = -totalCurrentAngle / 2;
+
+                // Points of the original shape, offset
+                const p_outer_left = polarToRawCartesian(R2 + outerCutLineOffset, startAngleOffset);
+                const p_outer_right = polarToRawCartesian(R2 + outerCutLineOffset, startAngleOffset + totalCurrentAngle);
+                const p_inner_right = polarToRawCartesian(R1 - outerCutLineOffset, startAngleOffset + totalCurrentAngle);
+                const p_inner_left = polarToRawCartesian(R1 - outerCutLineOffset, startAngleOffset);
+
+                outerPathD = `M ${p_outer_left.x},${p_outer_left.y} `;
+                outerPathD += `A ${R2 + outerCutLineOffset} ${R2 + outerCutLineOffset} 0 0 1 ${p_outer_right.x},${p_outer_right.y} `;
+                outerPathD += `L ${p_inner_right.x},${p_inner_right.y} `;
+                outerPathD += `A ${R1 - outerCutLineOffset} ${R1 - outerCutLineOffset} 0 0 0 ${p_inner_left.x},${p_inner_left.y} `;
+                outerPathD += `Z`;
+
+                // Update bounds with these offset path points
+                updateGlobalBoundsWithPoint(p_outer_left.x, p_outer_left.y);
+                updateGlobalBoundsWithPoint(p_outer_right.x, p_outer_right.y);
+                updateGlobalBoundsWithPoint(p_inner_right.x, p_inner_right.y);
+                updateGlobalBoundsWithPoint(p_inner_left.x, p_inner_left.y);
+            }
+
+            svgContent += `
+                <path d="${outerPathD}" fill="none" stroke="${currentOuterOutlineColor}" stroke-width="${effectiveOuterCutLineThickness}"/>
+            `;
+
+            // Adjust global bounds for stroke widths.
+            const strokeBuffer = Math.max(effectivePleatLineThickness, effectiveOuterCutLineThickness, effectiveCornerFoldOutlineThickness) / 2;
+            minX_global -= strokeBuffer;
+            maxX_global += strokeBuffer;
+            minY_global -= strokeBuffer;
+            maxY_global += strokeBuffer;
+
+
+            // Calculate final viewBox dimensions based on global bounds and padding
+            const viewBoxMinX = minX_global - padding;
+            const viewBoxMinY = minY_global - padding;
+            const viewBoxWidth = (maxX_global - minX_global) + (2 * padding);
+            const viewBoxHeight = (maxY_global - minY_global) + (2 * padding);
+
+            const finalViewBoxWidth = Math.max(1, viewBoxWidth);
+            const finalViewBoxHeight = Math.max(1, viewBoxHeight);
+
+
+            console.log(`Final Global Bounds: minX=${minX_global}, maxX=${maxX_global}, minY=${minY_global}, maxY=${maxY_global}`);
+            console.log(`Final ViewBox: ${viewBoxMinX} ${viewBoxMinY} ${finalViewBoxWidth} ${finalViewBoxHeight}`);
+
+            // Construct the final SVG string
+            const finalSvg = `
+                <svg width="100%" height="100%" viewBox="${viewBoxMinX} ${viewBoxMinY} ${finalViewBoxWidth} ${finalViewBoxHeight}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"
+                     style="background-color: ${invertColors ? '#000000' : '#FFFFFF'}; border: 1px solid ${invertColors ? '#FFFFFF' : '#000000'};">
+                    <defs>
+                        <!-- Marker for arrow pointing right (for end of line) -->
+                        <marker id="arrow-end" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
+                            <path d="M0,0 L0,6 L9,3 z" fill="${currentArrowHeadColor}" />
+                        </marker>
+                        <!-- Marker for arrow pointing left (for start of line) -->
+                        <marker id="arrow-start" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                            <path d="M9,0 L9,6 L0,3 z" fill="${currentArrowHeadColor}" />
+                        </marker>
+                    </defs>
+                    ${svgContent}
+                </svg>
+            `;
+            console.log("SVG content generated. Length:", finalSvg.length);
+            return { success: true, svg: finalSvg };
+        }
+
+
+        /**
+         * Performs the bellows pattern calculation based on input values.
+         */
+        function calculatePattern() {
+            console.log("Calculate Pattern initiated.");
+            clearErrorMessage();
+
+            svgWrapper.innerHTML = '';
+            diagramPlaceholder.textContent = 'The calculated pattern will appear here as a single, continuous piece with internal seams.';
+            diagramPlaceholder.style.display = 'block';
+            exportPngButton.style.display = 'none'; // Hide PNG button initially until diagram is ready
+            exportSvgButton.style.display = 'none'; // Hide SVG button initially until diagram is ready
+
+
+            const frontOpeningWidth = parseFloat(frontOpeningWidthInput.value);
+            const frontOpeningHeight = parseFloat(frontOpeningHeightInput.value);
+            const rearOpeningWidth = parseFloat(rearOpeningWidthInput.value);
+            const rearOpeningHeight = parseFloat(rearOpeningHeightInput.value);
+            const extendedLength = parseFloat(extendedLengthInput.value);
+            let numberOfFolds = parseInt(numberOfFoldsInput.value);
+            const foldDepth = parseFloat(foldDepthInput.value);
+            const smallFoldDepth = parseFloat(smallFoldDepthInput.value);
+            const materialThickness = parseFloat(materialThicknessInput.value);
+            const innerPleatLineReductionAmount = parseFloat(innerPleatLineReductionAmountInput.value);
+            const outerPleatLineReductionAmount = parseFloat(outerPleatLineReductionAmountInput.value);
+            const pleatLineThickness = parseFloat(pleatLineThicknessInput.value);
+            const outerCutLineOffset = parseFloat(outerCutLineOffsetInput.value);
+            const outerCutLineThickness = parseFloat(outerCutLineThicknessInput.value);
+            const cornerFoldLengthReductionPercent = parseFloat(cornerFoldLengthReductionPercentInput.value);
+            const cornerFoldOutlineThickness = parseFloat(cornerFoldOutlineThicknessInput.value);
+            const showDimensions = showDimensionsCheckbox.checked;
+            const invertColors = invertColorsCheckbox.checked;
+            const calculateMaxFolds = maxFoldsCheckbox.checked;
+
+            // Basic input validation
+            if (isNaN(frontOpeningWidth) || frontOpeningWidth <= 0 ||
+                isNaN(frontOpeningHeight) || frontOpeningHeight <= 0 ||
+                isNaN(rearOpeningWidth) || rearOpeningWidth <= 0 ||
+                isNaN(rearOpeningHeight) || rearOpeningHeight <= 0 ||
+                isNaN(extendedLength) || extendedLength <= 0 ||
+                isNaN(foldDepth) || foldDepth <= 0 ||
+                isNaN(smallFoldDepth) || smallFoldDepth <= 0 ||
+                isNaN(materialThickness) || materialThickness <= 0 ||
+                isNaN(innerPleatLineReductionAmount) || innerPleatLineReductionAmount < 0 ||
+                isNaN(outerPleatLineReductionAmount) || outerPleatLineReductionAmount < 0 ||
+                isNaN(pleatLineThickness) || pleatLineThickness <= 0 ||
+                isNaN(outerCutLineOffset) || outerCutLineOffset < 0 ||
+                isNaN(outerCutLineThickness) || outerCutLineThickness <= 0 ||
+                isNaN(cornerFoldLengthReductionPercent) || cornerFoldLengthReductionPercent < 0 || cornerFoldLengthReductionPercent > 100 ||
+                isNaN(cornerFoldOutlineThickness) || cornerFoldOutlineThickness < 0) {
+                showErrorMessage('Please enter valid positive numbers for all fields, non-negative numbers for Pleat Line Reductions, positive numbers for line thicknesses, and a non-negative number for Outer Cut Line Offset and Corner Fold Outline Thickness. Percentages for Corner Fold Reduction must be between 0-100.');
+                return;
+            }
+
+            // Handle "Calculate Max Folds" override
+            if (calculateMaxFolds) {
+                numberOfFoldsInput.disabled = true;
+                let maxPossibleFolds = 0;
+                let tempNumFolds = 1;
+
+                while (true) {
+                    const tempNumSmallFolds = Math.min(tempNumFolds, 6);
+                    const tempNumNormalFolds = tempNumFolds - tempNumSmallFolds;
+                    const tempMaterialLengthForFolds = tempNumSmallFolds * (2 * smallFoldDepth) + tempNumNormalFolds * (2 * foldDepth);
+
+                    if (extendedLength > tempMaterialLengthForFolds) {
+                        maxPossibleFolds = tempNumFolds;
+                        tempNumFolds++;
+                    } else {
+                        break;
+                    }
+                }
+
+                if (maxPossibleFolds === 0) {
+                    showErrorMessage('Cannot fit any folds with the given dimensions. Please increase Extended Length or reduce Fold Depths/Material Thickness.');
+                    numberOfFoldsInput.value = 0;
+                    return;
+                }
+                numberOfFolds = maxPossibleFolds;
+                numberOfFoldsInput.value = numberOfFolds;
+            } else {
+                numberOfFoldsInput.disabled = false;
+                if (isNaN(numberOfFolds) || numberOfFolds <= 0) {
+                    showErrorMessage('Please enter a valid positive number for Number of Folds, or select "Calculate Max Folds".');
+                    return;
+                }
+            }
+
+
+            const numSmallFolds = Math.min(numberOfFolds, 6);
+            const numNormalFolds = numberOfFolds - numSmallFolds;
+
+            const materialLengthForSmallFolds = numSmallFolds * (2 * smallFoldDepth);
+            const materialLengthForNormalFolds = Math.max(0, numNormalFolds) * (2 * foldDepth);
+            const totalMaterialLengthForFolds = materialLengthForSmallFolds + materialLengthForNormalFolds;
+
+            let calculatedCompressedLength = extendedLength - totalMaterialLengthForFolds;
+
+            if (calculatedCompressedLength <= 0) {
+                showErrorMessage(`Calculated Compressed Length (${calculatedCompressedLength.toFixed(2)} mm) is not positive. Please increase Extended Length or reduce Fold Depths/Number of Folds.`);
+                return;
+            }
+
+            const totalMaterialLength = calculatedCompressedLength + totalMaterialLengthForFolds;
+
+            const effectiveSideFoldDepth = Math.max(foldDepth, smallFoldDepth);
+
+            const averageFoldSpacing = numberOfFolds > 0 ? totalMaterialLengthForFolds / numberOfFolds : 0;
+
+
+            resultsDiv.innerHTML = `
+                <h3 class="text-xl font-bold mb-4">Calculated Pattern Dimensions:</h3>
+                <p style="color: #4b5563;"><strong>Calculated Compressed Length:</strong> <span class="font-semibold text-green-700">${calculatedCompressedLength.toFixed(2)} mm</span></p>
+                <p style="color: #4b5563;"><strong>Length of Each Flat Panel:</strong> <span class="font-semibold text-indigo-700">${totalMaterialLength.toFixed(2)} mm</span></p>
+            `;
+
+            const generatedResult = generatePatternDiagram({
+                totalMaterialLength,
+                foldSpacing: averageFoldSpacing,
+                numberOfFolds,
+                frontOpeningWidth,
+                frontOpeningHeight,
+                rearOpeningWidth,
+                rearOpeningHeight,
+                effectiveSideFoldDepth,
+                foldDepth,
+                smallFoldDepth,
+                numSmallFolds,
+                numNormalFolds
+            }, showDimensions, invertColors, innerPleatLineReductionAmount, outerPleatLineReductionAmount, pleatLineThickness, outerCutLineOffset, outerCutLineThickness, cornerFoldLengthReductionPercent, cornerFoldOutlineThickness);
+
+            if (generatedResult.success) {
+                svgWrapper.innerHTML = generatedResult.svg;
+                diagramPlaceholder.style.display = 'none';
+                exportPngButton.style.display = 'block'; // Show export button when diagram is ready
+                exportSvgButton.style.display = 'block'; // Show SVG export button when diagram is ready
+
+            } else {
+                svgWrapper.innerHTML = '';
+                diagramPlaceholder.textContent = 'Cannot generate diagram due to errors.';
+                diagramPlaceholder.style.display = 'block';
+                exportPngButton.style.display = 'none'; // Hide export button on error
+                exportSvgButton.style.display = 'none'; // Hide SVG export button on error
+                showErrorMessage(generatedResult.message); // Display the specific error message
+            }
+
+            if (showDimensions) {
+                explanatoryNoteDiv.innerHTML = `
+                    (Note: This diagram is a simplified 2D representation for conceptual understanding.<br>
+                    Actual pattern requires precise cutting and folding based on dimensions.<br>
+                    Fold spacing shown is an average; actual spacing for end pleats will differ.)
+                `;
+            } else {
+                explanatoryNoteDiv.innerHTML = '';
+            }
+            console.log("Calculate Pattern finished.");
+        }
+
+        /**
+         * Exports the currently displayed SVG as a PNG image.
+         */
+        function exportAsPng() {
+            const svgElement = svgWrapper.querySelector('svg');
+            if (!svgElement) {
+                showErrorMessage("No SVG diagram available to export.");
+                return;
+            }
+
+            // Get SVG dimensions from its viewBox
+            const viewBox = svgElement.getAttribute('viewBox').split(' ').map(Number);
+            const svgWidth = viewBox[2];
+            const svgHeight = viewBox[3];
+
+            // Create a canvas element
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+
+            // Set canvas dimensions
+            // For higher resolution, multiply dimensions (e.g., by 2 or 3)
+            const scaleFactor = 4; // Export at 4x resolution for better quality
+            canvas.width = svgWidth * scaleFactor;
+            canvas.height = svgHeight * scaleFactor;
+
+            // Use a white background for non-inverted diagrams, or black for inverted
+            const invertColors = invertColorsCheckbox.checked;
+            context.fillStyle = invertColors ? '#000000' : '#FFFFFF';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+
+            // Create an Image object from the SVG data
+            const img = new Image();
+            // Serialize SVG to string and then to base64 data URL
+            const svgString = new XMLSerializer().serializeToString(svgElement);
+            const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(svgBlob);
+
+            img.onload = () => {
+                context.drawImage(img, 0, 0, canvas.width, canvas.height);
+                URL.revokeObjectURL(url); // Clean up the URL
+
+                // Get PNG data URL
+                const pngDataUrl = canvas.toDataURL('image/png');
+
+                // Create a temporary link and trigger download
+                const downloadLink = document.createElement('a');
+                downloadLink.href = pngDataUrl;
+                downloadLink.download = 'bellows-pattern.png';
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink); // Clean up the link
+            };
+
+            img.onerror = (error) => {
+                console.error("Error loading SVG for PNG export:", error);
+                showErrorMessage("Failed to export PNG. Check console for details.");
+            };
+
+            img.src = url;
+        }
+
+        /**
+         * Exports the currently displayed SVG as an SVG file.
+         */
+        function exportAsSvg() {
+            const svgElement = svgWrapper.querySelector('svg');
+            if (!svgElement) {
+                showErrorMessage("No SVG diagram available to export.");
+                return;
+            }
+
+            // Get the raw SVG string
+            const svgString = new XMLSerializer().serializeToString(svgElement);
+
+            // Create a Blob with the SVG content
+            const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+
+            // Create an object URL for the Blob
+            const url = URL.createObjectURL(svgBlob);
+
+            // Create a temporary link element to trigger the download
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.download = 'bellows-pattern.svg'; // Suggested filename
+            document.body.appendChild(downloadLink);
+
+            // Programmatically click the link to trigger the download
+            downloadLink.click();
+
+            // Clean up the URL and the link element
+            document.body.removeChild(downloadLink);
+            URL.revokeObjectURL(url);
+        }
+
+        calculateButton.addEventListener('click', calculatePattern);
+        showDimensionsCheckbox.addEventListener('change', calculatePattern);
+        invertColorsCheckbox.addEventListener('change', calculatePattern);
+        maxFoldsCheckbox.addEventListener('change', calculatePattern);
+        innerPleatLineReductionAmountInput.addEventListener('input', calculatePattern);
+        outerPleatLineReductionAmountInput.addEventListener('input', calculatePattern);
+        pleatLineThicknessInput.addEventListener('input', calculatePattern);
+        outerCutLineOffsetInput.addEventListener('input', calculatePattern);
+        outerCutLineThicknessInput.addEventListener('input', calculatePattern);
+        cornerFoldLengthReductionPercentInput.addEventListener('input', calculatePattern);
+        cornerFoldOutlineThicknessInput.addEventListener('input', calculatePattern);
+        exportPngButton.addEventListener('click', exportAsPng);
+        exportSvgButton.addEventListener('click', exportAsSvg); // New event listener for SVG export
+
+
+        const allInputs = document.querySelectorAll('.input-grid input[type="number"]');
+        allInputs.forEach(input => {
+            input.addEventListener('input', calculatePattern);
+        });
+
+        window.onload = function() {
+            if (maxFoldsCheckbox.checked) {
+                numberOfFoldsInput.disabled = true;
+            }
+            calculatePattern(); // Initial calculation on load
+        };
+    </script>
+</body>
+</html>
